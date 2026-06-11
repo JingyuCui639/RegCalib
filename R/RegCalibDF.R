@@ -1,4 +1,4 @@
-#' Regression Calibration Using the Delta-Method (RSW Approach)
+#' Regression Calibration Using the Deattenuation Factor Method
 #'
 #' Corrects for measurement error in continuous exposures (and covariates) and
 #' returns corrected coefficients, standard errors, p-values, and

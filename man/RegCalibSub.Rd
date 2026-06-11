@@ -2,7 +2,7 @@
 % Please edit documentation in R/RegCalibSub.R
 \name{RegCalibSub}
 \alias{RegCalibSub}
-\title{Regression Calibration Using Sandwich Variance Estimation (CRS Approach)}
+\title{Regression Calibration Using Substitution Method}
 \usage{
 RegCalibSub(
   ms,

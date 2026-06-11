@@ -1,0 +1,445 @@
+<!DOCTYPE html><html lang="en"><head><title>Help for package RegCalib</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.css">
+<script>
+const macros = { "\\R": "\\textsf{R}", "\\mbox": "\\text", "\\code": "\\texttt"};
+function processMathHTML() {
+    var l = document.getElementsByClassName('reqn');
+    for (let e of l) { katex.render(e.textContent, e, { throwOnError: false, macros }); }
+    return;
+}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.3/dist/katex.min.js"
+    onload="processMathHTML();"></script>
+<link rel="stylesheet" type="text/css" href="C:/PROGRA~1/R/R-45~1.3/doc/html/R-nav.css">
+</head><body><div class="container"><nav class="package" aria-label="Topic Navigation">
+<div class="dropdown-menu">
+<h1>Package {RegCalib}</h1>
+<h2>Contents</h2>
+<ul class="menu">
+<li><a href='#RegCalibDF'><p>Regression Calibration Using the Deattenuation Factor Method</p></a></li>
+<li><a href='#RegCalibSub'><p>Regression Calibration Using Substitution Method</p></a></li>
+</ul>
+</div>
+<hr>
+</nav>
+<main>
+<table role='presentation'>
+<tr>
+<td>Title:</td>
+<td>Regression Calibration for Measurement Error Correction</td>
+</tr>
+<tr>
+<td>Version:</td>
+<td>0.1.0</td>
+</tr>
+<tr>
+<td>Description:</td>
+<td>Corrects for measurement error in continuous exposures (and
+    covariates) using regression calibration methods. Provides corrected
+    coefficients, standard errors, p-values, and variance-covariance
+    matrices for linear, generalized linear, and Cox proportional hazards
+    outcome models under both external and internal validation study designs.
+    Implements the deattenuation factor method
+    (RegCalibDF) and the substitution approach (RegCalibSub). Supports single and multiple
+    mismeasured exposures.</td>
+</tr>
+<tr>
+<td>License:</td>
+<td><a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a></td>
+</tr>
+<tr>
+<td>Encoding:</td>
+<td>UTF-8</td>
+</tr>
+<tr>
+<td>Roxygen:</td>
+<td>list(markdown = TRUE)</td>
+</tr>
+<tr>
+<td>Imports:</td>
+<td>stats, dplyr, magrittr, Matrix, matrixcalc, earth, survival</td>
+</tr>
+<tr>
+<td>Suggests:</td>
+<td>testthat (&ge; 3.0.0)</td>
+</tr>
+<tr>
+<td>Config/testthat/edition:</td>
+<td>3</td>
+</tr>
+<tr>
+<td>URL:</td>
+<td><a href="https://github.com/cuijy1990/RegCalib">https://github.com/cuijy1990/RegCalib</a></td>
+</tr>
+<tr>
+<td>BugReports:</td>
+<td><a href="https://github.com/cuijy1990/RegCalib/issues">https://github.com/cuijy1990/RegCalib/issues</a></td>
+</tr>
+<tr>
+<td>Config/roxygen2/version:</td>
+<td>8.0.0</td>
+</tr>
+<tr>
+<td>NeedsCompilation:</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Packaged:</td>
+<td>2026-06-11 18:46:12 UTC; jc4428</td>
+</tr>
+<tr>
+<td>Author:</td>
+<td>Wenze Tang [aut],
+  Molin Wang [aut],
+  Jingyu Cui [aut, cre]</td>
+</tr>
+<tr>
+<td>Maintainer:</td>
+<td>Jingyu Cui &lt;jingyu.cui@yale.edu&gt;</td>
+</tr>
+<tr>
+<td>Built:</td>
+<td>R 4.5.3; ; 2026-06-11 18:46:13 UTC; windows</td>
+</tr>
+</table>
+<hr><span id='rdfile+RegCalibDF'></span>
+<h2 id='RegCalibDF'>Regression Calibration Using the Deattenuation Factor Method</h2><span id='topic+RegCalibDF'></span>
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>RegCalibDF(
+  supplyEstimates = FALSE,
+  ms,
+  vs,
+  sur,
+  exp,
+  covCalib = NULL,
+  covOutcome = NULL,
+  outcome = NA,
+  event,
+  time,
+  method = "lm",
+  family = NA,
+  link = NA,
+  external = TRUE,
+  pointEstimates = NA,
+  vcovEstimates = NA
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="RegCalibDF_+3A_supplyEstimates">supplyEstimates</code></td>
+<td>
+<p>Logical. If <code>TRUE</code>, uncorrected estimates are
+supplied by the user via <code>pointEstimates</code> and <code>vcovEstimates</code>,
+and <code>ms</code> is optional. Standard regression results are not returned
+in this case. Default <code>FALSE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_ms">ms</code></td>
+<td>
+<p>Main study data frame. Must contain all variables specified in
+<code>sur</code>, <code>covCalib</code>, and <code>covOutcome</code>. Required when
+<code>supplyEstimates = FALSE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_vs">vs</code></td>
+<td>
+<p>Internal or external validation study data frame. Must contain
+all variables specified in <code>exp</code>, <code>sur</code>, and <code>covCalib</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_sur">sur</code></td>
+<td>
+<p>Character vector of mismeasured exposure(s)/covariate(s)
+(surrogates) in the main study dataset.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_exp">exp</code></td>
+<td>
+<p>Character vector of correctly-measured exposure(s)/covariate(s)
+in the validation dataset. Must correspond one-to-one with <code>sur</code> and
+have the same length.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_covCalib">covCalib</code></td>
+<td>
+<p>Character vector of correctly-measured covariates to adjust
+for in both the calibration model and the outcome model. Default
+<code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_covOutcome">covOutcome</code></td>
+<td>
+<p>Character vector of correctly-measured risk factors for
+the outcome that are <em>not</em> associated with the exposure or surrogate.
+These are included in the outcome model only and must not overlap with
+<code>covCalib</code>. Default <code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_outcome">outcome</code></td>
+<td>
+<p>Character. Name of the outcome variable. Required when
+<code>method</code> is <code>"lm"</code> or <code>"glm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_event">event</code></td>
+<td>
+<p>Character. Name of the event status indicator for Cox models
+(0 = censored, 1 = event). Required when <code>method = "cox"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_time">time</code></td>
+<td>
+<p>Character. Name of the follow-up time variable for Cox models.
+Required when <code>method = "cox"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_method">method</code></td>
+<td>
+<p>Character. Outcome modelling method: <code>"lm"</code>,
+<code>"glm"</code>, or <code>"cox"</code>. Default <code>"lm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_family">family</code></td>
+<td>
+<p>Family function for <code>glm</code> (e.g., <code>binomial</code>). Not
+a character string. Required when <code>method = "glm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_link">link</code></td>
+<td>
+<p>Character. Link function for <code>glm</code> (e.g.,
+<code>"logit"</code>). Required when <code>method = "glm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_external">external</code></td>
+<td>
+<p>Logical. <code>TRUE</code> (default) for an external validation
+study; <code>FALSE</code> for an internal validation study. When
+<code>external = FALSE</code>, <code>vs</code> must contain the outcome variable and
+<code>supplyEstimates</code> must be <code>FALSE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_pointEstimates">pointEstimates</code></td>
+<td>
+<p>Named numeric vector of uncorrected point estimates
+from standard regression (intercept excluded). Names must match the
+(expanded) covariate names from <code>covCalib</code> followed by
+<code>covOutcome</code>. Required when <code>supplyEstimates = TRUE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibDF_+3A_vcovEstimates">vcovEstimates</code></td>
+<td>
+<p>Named square matrix of uncorrected variance-covariance
+estimates (intercept excluded). Column names must match those of
+<code>pointEstimates</code>. Required when <code>supplyEstimates = TRUE</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A named list containing:
+</p>
+
+<dl>
+<dt>correctedCoefTable</dt><dd><p>Data frame of corrected estimates, standard
+errors, Z-values, p-values, and 95\
+\itemcorrectedVCOVVariance-covariance matrix of the corrected
+estimates.
+\itemstandardCoefTable(When <code>supplyEstimates = FALSE</code>) Results
+from the uncorrected standard regression.
+\itemstandardVCOV(When <code>supplyEstimates = FALSE</code>) Variance-
+covariance matrix from the uncorrected standard regression.
+\itemcalibrationModelCoefTableCalibration model slope estimates.
+\itemcalibrationModelVCOVResidual variance-covariance matrix from
+the calibration model.
+</p>
+</dd>
+</dl>
+
+
+<p>Corrects for measurement error in continuous exposures (and covariates) and
+returns corrected coefficients, standard errors, p-values, and
+variance-covariance matrices. Users may supply their own uncorrected
+estimates (e.g., from Cox or logistic models) instead of using the built-in
+outcome model. Both external and internal validation study designs are
+supported. Based on Rosner, Spiegelman &amp; Willett (1989, 1990) and
+Spiegelman, McDermott &amp; Rosner (1997).
+
+
+## Not run: 
+result &lt;- RegCalibDF(
+  ms         = main_data,
+  vs         = validation_data,
+  sur        = "Z",
+  exp        = "X",
+  covCalib   = c("V1", "V2"),
+  outcome    = "Y",
+  method     = "lm",
+  external   = TRUE
+)
+result$correctedCoefTable
+
+## End(Not run)
+</p>
+
+
+<p>Rosner B, Willett WC, Spiegelman D (1989). Correction of logistic relative
+risk estimates and confidence intervals for systematic within-person
+measurement error. <em>Statistics in Medicine</em> 8:1051&ndash;1069.
+</p>
+<p>Rosner B, Spiegelman D, Willett WC (1990). Correction of logistic
+regression relative risk estimates and confidence intervals for measurement
+error: the case of multiple covariates measured with error.
+<em>American Journal of Epidemiology</em> 132:734&ndash;735.
+</p>
+<p>Spiegelman D, McDermott A, Rosner B (1997). The many uses of the
+'regression calibration' method for measurement error bias correction in
+nutritional epidemiology. <em>American Journal of Clinical Nutrition</em>
+65:1179S&ndash;1186S.
+</p>
+<p>Spiegelman D, Carroll RJ, Kipnis V (2001). Efficient regression calibration
+for logistic regression in main study/internal validation study designs
+with an imperfect reference instrument. <em>Statistics in Medicine</em>
+20:139&ndash;160.
+
+</p>
+
+<hr><span id='rdfile+RegCalibSub'></span>
+<h2 id='RegCalibSub'>Regression Calibration Using Substitution Method</h2><span id='topic+RegCalibSub'></span>
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>RegCalibSub(
+  ms,
+  vs,
+  sur,
+  exp,
+  vsIndicator,
+  covCalib = NULL,
+  covOutcome = NULL,
+  outcome = NA,
+  method = "lm",
+  family = NA,
+  link = NA,
+  external = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="RegCalibSub_+3A_ms">ms</code></td>
+<td>
+<p>Main study data frame. Must contain all variables specified in
+<code>sur</code>, <code>outcome</code>, and <code>covOutcome</code> (if any).</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_vs">vs</code></td>
+<td>
+<p>External validation study data frame. Must contain all variables
+specified in <code>exp</code>, <code>sur</code>, and <code>covCalib</code> (if any).
+Required when <code>external = TRUE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_sur">sur</code></td>
+<td>
+<p>Character vector of mismeasured exposure(s)/covariate(s)
+(surrogates) in the main study dataset.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_exp">exp</code></td>
+<td>
+<p>Character vector of correctly-measured exposure(s)/covariate(s)
+in the validation dataset. Must correspond one-to-one with <code>sur</code> and
+have the same length.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_vsIndicator">vsIndicator</code></td>
+<td>
+<p>Character. Name of the indicator variable in the main
+study dataset that identifies subjects with a validation record
+(1 = has validation record). Required when <code>external = FALSE</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_covCalib">covCalib</code></td>
+<td>
+<p>Character vector of correctly-measured covariates to adjust
+for in the calibration model, including any non-linear terms. Default
+<code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_covOutcome">covOutcome</code></td>
+<td>
+<p>Character vector of correctly-measured covariates to
+adjust for in the outcome model (with corrected exposure), including any
+non-linear terms. Default <code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_outcome">outcome</code></td>
+<td>
+<p>Character. Name of the outcome variable. Required.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_method">method</code></td>
+<td>
+<p>Character. Outcome modelling method: <code>"lm"</code> or
+<code>"glm"</code>. Default <code>"lm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_family">family</code></td>
+<td>
+<p>Family function for <code>glm</code> (e.g., <code>binomial</code>). Not
+a character string. Required when <code>method = "glm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_link">link</code></td>
+<td>
+<p>Character. Link function for <code>glm</code> (e.g., <code>"logit"</code>
+or <code>"log"</code>). Required when <code>method = "glm"</code>.</p>
+</td></tr>
+<tr><td><code id="RegCalibSub_+3A_external">external</code></td>
+<td>
+<p>Logical. <code>TRUE</code> (default) for an external validation
+study; <code>FALSE</code> for an internal validation study embedded in <code>ms</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A named list containing:
+</p>
+
+<dl>
+<dt>correctedCoefTable</dt><dd><p>Matrix of corrected estimates, standard errors,
+Z-values, p-values, and 95\
+\itemcorrectedVCOVVariance-covariance matrix of the corrected
+estimates.
+</p>
+</dd>
+</dl>
+
+
+<p>Corrects for measurement error in continuous exposures (and covariates) and
+returns corrected coefficients, standard errors, p-values, and
+variance-covariance matrices using the Carroll-Ruppert-Stefanski-Crainiceanu
+(CRS) sandwich variance estimator. Supports linear and generalized linear
+outcome models under external and internal validation study designs. Standard
+errors are derived analytically via the sandwich estimator (not bootstrap).
+Non-linear terms such as interaction terms should be pre-computed as
+permanent columns in the input datasets rather than specified in the formula.
+
+
+## Not run: 
+result &lt;- RegCalibSub(
+  ms       = main_data,
+  vs       = validation_data,
+  sur      = "Z",
+  exp      = "X",
+  covCalib = c("V1", "V2"),
+  outcome  = "Y",
+  method   = "lm",
+  external = TRUE
+)
+result$correctedCoefTable
+
+## End(Not run)
+</p>
+
+
+<p>Carroll RJ, Ruppert D, Stefanski LA, Crainiceanu CM (2006).
+<em>Measurement Error in Nonlinear Models</em>, 2nd ed.
+Chapman &amp; Hall/CRC.
+
+</p>
+
+</main>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-r.min.js"></script>
+</body></html>

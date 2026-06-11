@@ -2,7 +2,7 @@
 % Please edit documentation in R/RegCalibDF.R
 \name{RegCalibDF}
 \alias{RegCalibDF}
-\title{Regression Calibration Using the Delta-Method (RSW Approach)}
+\title{Regression Calibration Using the Deattenuation Factor Method}
 \usage{
 RegCalibDF(
   supplyEstimates = FALSE,

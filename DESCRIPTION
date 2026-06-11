@@ -11,7 +11,7 @@ Description: Corrects for measurement error in continuous exposures (and
     coefficients, standard errors, p-values, and variance-covariance
     matrices for linear, generalized linear, and Cox proportional hazards
     outcome models under both external and internal validation study designs.
-    Implements the diattenuation factor method
+    Implements the deattenuation factor method
     (RegCalibDF) and the substitution approach (RegCalibSub). Supports single and multiple
     mismeasured exposures.
 License: GPL-3

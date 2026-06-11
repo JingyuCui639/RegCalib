@@ -1,4 +1,4 @@
-#' Regression Calibration Using Sandwich Variance Estimation (CRS Approach)
+#' Regression Calibration Using Substitution Method
 #'
 #' Corrects for measurement error in continuous exposures (and covariates) and
 #' returns corrected coefficients, standard errors, p-values, and

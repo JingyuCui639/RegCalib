@@ -1,0 +1,29 @@
+url: https://github.com/JingyuCui639/RegCalib/
+
+template:
+  bootstrap: 5
+  light-switch: true
+  bslib:
+    primary: "#2C3E50"
+    base_font:
+      google: "Source Sans 3"
+    heading_font:
+      google: "Source Sans 3"
+    code_font:
+      google: "Fira Code"
+
+navbar:
+  structure:
+    left:  [intro, reference]
+    right: [search, github, lightswitch]
+
+  components:
+    intro:
+      text: Get started
+      href: articles/RegCalib-introduction.html
+
+reference:
+- title: Main functions
+  contents:
+  - RegCalibDF
+  - RegCalibSub
