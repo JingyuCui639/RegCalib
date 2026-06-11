@@ -1,8 +1,0 @@
-pandoc: 3.8.3
-pkgdown: 2.2.0
-pkgdown_sha: ~
-articles: {}
-last_built: 2026-06-11T18:59Z
-urls:
-  reference: https://github.com/JingyuCui639/RegCalib/reference
-  article: https://github.com/JingyuCui639/RegCalib/articles
