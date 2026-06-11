@@ -22,7 +22,7 @@ Both functions support single and multiple mismeasured exposures.
 install.packages("devtools")
 
 # Install RegCalib from GitHub
-devtools::install_github("YOUR_USERNAME/RegCalib")
+devtools::install_github("JingyuCui639/RegCalib")
 ```
 
 ---
