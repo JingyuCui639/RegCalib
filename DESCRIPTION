@@ -20,6 +20,7 @@ Roxygen: list(markdown = TRUE)
 Imports:
     stats,
     dplyr,
+    magrittr,
     Matrix,
     matrixcalc,
     earth,
