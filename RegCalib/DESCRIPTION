@@ -1,0 +1,32 @@
+Package: RegCalib
+Title: Regression Calibration for Measurement Error Correction
+Version: 0.1.0
+Authors@R: c(
+    person("Wenze", "Tang", role = c("aut")),
+    person("Molin", "Wang", role = c("aut")),
+    person("Jingyu", "Cui", role = c("aut", "cre"),
+           email = "jingyu.cui@yale.edu"))
+Description: Corrects for measurement error in continuous exposures (and
+    covariates) using regression calibration methods. Provides corrected
+    coefficients, standard errors, p-values, and variance-covariance
+    matrices for linear, generalized linear, and Cox proportional hazards
+    outcome models under both external and internal validation study designs.
+    Implements the diattenuation factor method
+    (RegCalibDF) and the substitution approach (RegCalibSub). Supports single and multiple
+    mismeasured exposures.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports:
+    stats,
+    dplyr,
+    Matrix,
+    matrixcalc,
+    earth,
+    survival
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/cuijy1990/RegCalib
+BugReports: https://github.com/cuijy1990/RegCalib/issues
