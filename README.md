@@ -8,8 +8,8 @@
 
 | Function | Method | Reference |
 |---|---|---|
-| `RegCalibDF` | Delta-method (RSW approach) | Rosner, Spiegelman & Willett (1989, 1990); Spiegelman et al. (1997, 2001) |
-| `RegCalibSub` | Sandwich variance estimator (CRS approach) | Carroll, Ruppert, Stefanski & Crainiceanu (2006) |
+| `RegCalibDF` | Deattenuation factor method | Rosner, Spiegelman & Willett (1989, 1990); Spiegelman et al. (1997, 2001) |
+| `RegCalibSub` | Substitution method | Carroll, Ruppert, Stefanski & Crainiceanu (2006) |
 
 Both functions support single and multiple mismeasured exposures.
 
@@ -22,14 +22,14 @@ Both functions support single and multiple mismeasured exposures.
 install.packages("devtools")
 
 # Install RegCalib from GitHub
-devtools::install_github("YOUR_USERNAME/RegCalib")
+devtools::install_github("JingyuCui639/RegCalib")
 ```
 
 ---
 
 ## Usage
 
-### RegCalibDF — Delta-Method Correction (RSW)
+### RegCalibDF — Deattenuation Factor Method
 
 Suitable for linear, GLM, and Cox outcome models. Optionally accepts user-supplied uncorrected estimates (e.g., from an external Cox model).
 
@@ -69,7 +69,7 @@ result <- RegCalibDF(
 )
 ```
 
-### RegCalibSub — Sandwich Variance Correction (CRS)
+### RegCalibSub — Substitution Method
 
 Suitable for linear and GLM outcome models. Uses the Carroll-Ruppert-Stefanski-Crainiceanu substitution approach with analytical sandwich standard errors.
 
