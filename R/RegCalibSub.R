@@ -113,13 +113,31 @@ RegCalibSub <- function(ms, vs,
   } else if (class(outcome) != "character" | outcome == "" | outcome == " ") {
     stop("outcome is not supplied with appropriate character.")
   }
-
-  if (method != "lm") {
-    if (is.na(family) | is.na(link)) {
-      stop("You must supply `family` and `link` parameters if you do not wish to use least square linear outcome model.")
+########### Jingyu Cui June 10 2026 #####
+  if (!method %in% c("lm", "glm")) {
+    stop("method must be either 'lm' or 'glm'.")
+  }
+  
+  if (method == "glm") {
+    if (missing(family) || is.null(family)) {
+      stop("For method = 'glm', you must supply a family function, e.g., family = binomial.")
+    }
+    
+    if (!is.function(family)) {
+      stop("For method = 'glm', family must be a function, e.g., family = binomial, not family = 'binomial'.")
+    }
+    
+    if (missing(link) || is.null(link) || length(link) != 1 ||
+        !is.character(link) || is.na(link)) {
+      stop("For method = 'glm', link must be a character string, e.g., link = 'logit'.")
+    }
+    
+    if (!link %in% c("logit", "log")) {
+      stop("Currently only link = 'logit' and link = 'log' are supported.")
     }
   }
-
+######### Jingyu Cui June 10 2026 #############
+  
   ## 1. check if MS contains data indicated by sur and covOutcome
   MSVars_spec <- (c(sur, covOutcome))
   MSVars <- colnames(ms)
