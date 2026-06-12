@@ -22,3 +22,4 @@ install.packages("tinytex")
 tinytex::install_tinytex()
 
 devtools::build_manual(path = ".")
+
