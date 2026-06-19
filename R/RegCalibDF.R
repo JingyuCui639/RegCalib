@@ -13,7 +13,7 @@
 #'   and \code{ms} is optional. Standard regression results are not returned
 #'   in this case. Default \code{FALSE}.
 #' @param ms Main study data frame. Must contain all variables specified in
-#'   \code{sur}, \code{covCalib}, and \code{covOutcome}. Required when
+#'   \code{sur}, \code{covCalib}, and \code{covOutcomePlus}. Required when
 #'   \code{supplyEstimates = FALSE}.
 #' @param vs Internal or external validation study data frame. Must contain
 #'   all variables specified in \code{exp}, \code{sur}, and \code{covCalib}.
@@ -25,7 +25,7 @@
 #' @param covCalib Character vector of correctly-measured covariates to adjust
 #'   for in both the calibration model and the outcome model. Default
 #'   \code{NULL}.
-#' @param covOutcome Character vector of correctly-measured risk factors for
+#' @param covOutcomePlus Character vector of correctly-measured risk factors for
 #'   the outcome that are \emph{not} associated with the exposure or surrogate.
 #'   These are included in the outcome model only and must not overlap with
 #'   \code{covCalib}. Default \code{NULL}.
@@ -48,7 +48,7 @@
 #' @param pointEstimates Named numeric vector of uncorrected point estimates
 #'   from standard regression (intercept excluded). Names must match the
 #'   (expanded) covariate names from \code{covCalib} followed by
-#'   \code{covOutcome}. Required when \code{supplyEstimates = TRUE}.
+#'   \code{covOutcomePlus}. Required when \code{supplyEstimates = TRUE}.
 #' @param vcovEstimates Named square matrix of uncorrected variance-covariance
 #'   estimates (intercept excluded). Column names must match those of
 #'   \code{pointEstimates}. Required when \code{supplyEstimates = TRUE}.
@@ -105,7 +105,7 @@
 #'
 #' @export
 RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
-                       sur, exp, covCalib = NULL, covOutcome = NULL,
+                       sur, exp, covCalib = NULL, covOutcomePlus = NULL,
                        outcome = NA, event, time,
                        method = "lm", family = NA, link = NA,
                        external = TRUE,
@@ -140,10 +140,10 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   if (missing(covCalib)) {
     warning("No covariates supplied.")
   } else if (length(covCalib) != 0 & class(covCalib) != "character" ||
-             (length(covOutcome) != 0 & class(covOutcome) != "character")) {
-    stop("covCalib or covOutcome is not supplied with character vector.")
-  } else if (length(base::intersect(covCalib, covOutcome)) > 0) {
-    stop("There should be no overlapping variables in `covCalib` and `covOutcome`.")
+             (length(covOutcomePlus) != 0 & class(covOutcomePlus) != "character")) {
+    stop("covCalib or covOutcomePlus is not supplied with character vector.")
+  } else if (length(base::intersect(covCalib, covOutcomePlus)) > 0) {
+    stop("There should be no overlapping variables in `covCalib` and `covOutcomePlus`.")
   }
 
   if (missing(outcome)) {
@@ -152,13 +152,13 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
     stop("outcome is not supplied with appropriate character.")
   }
 
-  ## 1. check if MS contains data indicated by sur, covCalib and covOutcome
+  ## 1. check if MS contains data indicated by sur, covCalib and covOutcomePlus
   if (supplyEstimates == FALSE) {
-    MSVars_spec <- (c(sur, covCalib, covOutcome))
+    MSVars_spec <- (c(sur, covCalib, covOutcomePlus))
     MSVars <- colnames(ms)
     inMSVars <- (MSVars_spec %in% MSVars)
     if (sum(inMSVars) != length(MSVars_spec)) {
-      stop("Main study dataset does not contain all the necessary variables specified in one of the following parameter: id, sur, covCalib and covOutcome.")
+      stop("Main study dataset does not contain all the necessary variables specified in one of the following parameter: id, sur, covCalib and covOutcomePlus.")
     }
   }
 
@@ -176,20 +176,20 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   }
 
   if (supplyEstimates == FALSE) {
-    ## check if variables in covOutcome are strongly associated with exposure or surrogates
-    if (length(covOutcome) > 0 & class(covOutcome) == "character") {
+    ## check if variables in covOutcomePlus are strongly associated with exposure or surrogates
+    if (length(covOutcomePlus) > 0 & class(covOutcomePlus) == "character") {
       trackerPvalueGE005 <- 0
       for (i in 1:length(sur)) {
         surUnivariate <- sur[i]
-        checkCovOutcomeFormula <- paste0(surUnivariate, "~", paste0(covOutcome, collapse = "+"))
-        checkCovOutcomeModel <- stats::lm(data = ms, formula = stats::as.formula(checkCovOutcomeFormula))
-        checkCovOutcomePValues <- summary(checkCovOutcomeModel)$coefficients[-1, 4]
-        if (sum(checkCovOutcomePValues < 0.05) > 0) {
+        checkcovOutcomePlusFormula <- paste0(surUnivariate, "~", paste0(covOutcomePlus, collapse = "+"))
+        checkcovOutcomePlusModel <- stats::lm(data = ms, formula = stats::as.formula(checkcovOutcomePlusFormula))
+        checkcovOutcomePlusPValues <- summary(checkcovOutcomePlusModel)$coefficients[-1, 4]
+        if (sum(checkcovOutcomePlusPValues < 0.05) > 0) {
           trackerPvalueGE005 <- trackerPvalueGE005 + 1
         }
       }
       if (trackerPvalueGE005 > 0) {
-        warning("At least one of the risk factors specified in covOutcome is strongly associated with exposure(s) or surrogate(s) and should be reconsidered to be specified in covCalib instead.")
+        warning("At least one of the risk factors specified in covOutcomePlus is strongly associated with exposure(s) or surrogate(s) and should be reconsidered to be specified in covCalib instead.")
       }
     }
   }
@@ -222,27 +222,27 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   ######################
   # step 0: create design matrix
   if (supplyEstimates == FALSE) {
-    if (length(covOutcome) == 0 & length(covCalib) == 0) {
+    if (length(covOutcomePlus) == 0 & length(covCalib) == 0) {
       outcomeFormula <- paste0("~", paste0(sur, collapse = "+"))
       allVars_ms <- c(outcome, sur)
-    } else if (length(covOutcome) == 0) {
+    } else if (length(covOutcomePlus) == 0) {
       outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"))
       allVars_ms <- c(outcome, sur, covCalib)
     } else {
-      outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcome, collapse = "+"))
-      allVars_ms <- c(outcome, sur, covCalib, covOutcome)
+      outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcomePlus, collapse = "+"))
+      allVars_ms <- c(outcome, sur, covCalib, covOutcomePlus)
     }
 
     if (method == "cox") {
-      if (length(covOutcome) == 0 & length(covCalib) == 0) {
+      if (length(covOutcomePlus) == 0 & length(covCalib) == 0) {
         outcomeFormula <- paste0("~", paste0(sur, collapse = "+"))
         allVars_ms <- c(time, event, sur)
-      } else if (length(covOutcome) == 0) {
+      } else if (length(covOutcomePlus) == 0) {
         outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"))
         allVars_ms <- c(time, event, sur, covCalib)
       } else {
-        outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcome, collapse = "+"))
-        allVars_ms <- c(time, event, sur, covCalib, covOutcome)
+        outcomeFormula <- paste0("~", paste0(sur, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcomePlus, collapse = "+"))
+        allVars_ms <- c(time, event, sur, covCalib, covOutcomePlus)
       }
     }
   }
@@ -251,16 +251,16 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   if (external == TRUE) {
     allVars_vs <- c(exp, sur, covCalib)
   } else if (external == FALSE) {
-    if (length(covOutcome) == 0 & length(covCalib) == 0) {
+    if (length(covOutcomePlus) == 0 & length(covCalib) == 0) {
       allVars_vs <- c(exp, sur, outcome)
-    } else if (length(covOutcome) == 0) {
+    } else if (length(covOutcomePlus) == 0) {
       allVars_vs <- c(exp, sur, covCalib, outcome)
     } else {
-      allVars_vs <- c(exp, sur, covCalib, covOutcome, outcome)
+      allVars_vs <- c(exp, sur, covCalib, covOutcomePlus, outcome)
     }
   }
 
-  if (length(covOutcome) == 0 & length(covCalib) == 0) {
+  if (length(covOutcomePlus) == 0 & length(covCalib) == 0) {
     exposureFormulaX <- paste0("~", paste0(sur, collapse = "+"))
     exposureFormulaY <- paste0("~", paste0(exp, collapse = "+"))
   } else {
@@ -311,7 +311,7 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
       outcomeModelResults <- (list(outcomeParam, outcomeParamVCOV))
     }
 
-    if (length(outcomeModelVarNames) != (length(c(exposureModelVarNames, covOutcome)))) {
+    if (length(outcomeModelVarNames) != (length(c(exposureModelVarNames, covOutcomePlus)))) {
       stop("At least one categorical variable in main data set does not have the same length of values as in the validation data set. This violates the positivity required for the transportability of validation model. Consider data restriction or using continuous variable for extrapolation.")
     }
 
@@ -334,12 +334,12 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   X <- as.matrix(X_VS)
   Y <- as.matrix(Y_VS)
 
-  lCovOutcome <- length(riskFactorModelVarNames)
+  lcovOutcomePlus <- length(riskFactorModelVarNames)
   n <- nrow(X)
   pMeModel <- ncol(X) - 1
-  p <- ncol(X) - 1 + lCovOutcome
+  p <- ncol(X) - 1 + lcovOutcomePlus
 
-  if (length(covOutcome) == 0) {
+  if (length(covOutcomePlus) == 0) {
     F <- solve(t(X) %*% X)
     GWI <- F %*% t(X) %*% Y
     if (length(covCalib) == 0) {
@@ -348,14 +348,14 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
       GEV <- t(GWI[, exp])
     }
     ERR <- (Y - X %*% GWI)
-  } else if (length(covOutcome) > 0) {
-    I <- diag(lCovOutcome)
-    rightLowerZeroMatrix <- matrix(0, nrow = lCovOutcome, ncol = lCovOutcome)
+  } else if (length(covOutcomePlus) > 0) {
+    I <- diag(lcovOutcomePlus)
+    rightLowerZeroMatrix <- matrix(0, nrow = lcovOutcomePlus, ncol = lcovOutcomePlus)
     F <- solve(t(X) %*% X)
     GWI <- as.matrix(Matrix::bdiag((F %*% t(X) %*% Y), I))
     F <- as.matrix(Matrix::bdiag(F, rightLowerZeroMatrix))
-    X <- cbind(X, matrix(1, nrow = nrow(X), ncol = lCovOutcome))
-    Y <- cbind(Y, matrix(1, nrow = nrow(Y), ncol = lCovOutcome))
+    X <- cbind(X, matrix(1, nrow = nrow(X), ncol = lcovOutcomePlus))
+    Y <- cbind(Y, matrix(1, nrow = nrow(Y), ncol = lcovOutcomePlus))
     ERR <- (Y - X %*% GWI)
     colnames(GWI) <- colnames(Y)
     if (length(covCalib) == 0) {
@@ -388,12 +388,12 @@ RegCalibDF <- function(supplyEstimates = FALSE, ms, vs,
   # Additional steps for internal validation study #
   ##################################################
   if (external == FALSE) {
-    if (length(covCalib) == 0 & length(covOutcome) == 0) {
+    if (length(covCalib) == 0 & length(covOutcomePlus) == 0) {
       expFormula <- paste0("~", paste0(exp, collapse = "+"))
-    } else if (length(covOutcome) == 0) {
+    } else if (length(covOutcomePlus) == 0) {
       expFormula <- paste0("~", paste0(exp, collapse = "+"), "+", paste0(covCalib, collapse = "+"))
     } else {
-      expFormula <- paste0("~", paste0(exp, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcome, collapse = "+"))
+      expFormula <- paste0("~", paste0(exp, collapse = "+"), "+", paste0(covCalib, collapse = "+"), "+", paste0(covOutcomePlus, collapse = "+"))
     }
 
     if (method == "lm") {

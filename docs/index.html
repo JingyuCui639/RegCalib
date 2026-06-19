@@ -87,7 +87,7 @@ function processMathHTML() {
 </tr>
 <tr>
 <td>Packaged:</td>
-<td>2026-06-11 18:46:12 UTC; jc4428</td>
+<td>2026-06-19 17:19:06 UTC; jc4428</td>
 </tr>
 <tr>
 <td>Author:</td>
@@ -101,7 +101,7 @@ function processMathHTML() {
 </tr>
 <tr>
 <td>Built:</td>
-<td>R 4.5.3; ; 2026-06-11 18:46:13 UTC; windows</td>
+<td>R 4.5.3; ; 2026-06-19 17:19:07 UTC; windows</td>
 </tr>
 </table>
 <hr><span id='rdfile+RegCalibDF'></span>
@@ -116,7 +116,7 @@ function processMathHTML() {
   sur,
   exp,
   covCalib = NULL,
-  covOutcome = NULL,
+  covOutcomePlus = NULL,
   outcome = NA,
   event,
   time,
@@ -143,7 +143,7 @@ in this case. Default <code>FALSE</code>.</p>
 <tr><td><code id="RegCalibDF_+3A_ms">ms</code></td>
 <td>
 <p>Main study data frame. Must contain all variables specified in
-<code>sur</code>, <code>covCalib</code>, and <code>covOutcome</code>. Required when
+<code>sur</code>, <code>covCalib</code>, and <code>covOutcomePlus</code>. Required when
 <code>supplyEstimates = FALSE</code>.</p>
 </td></tr>
 <tr><td><code id="RegCalibDF_+3A_vs">vs</code></td>
@@ -168,7 +168,7 @@ have the same length.</p>
 for in both the calibration model and the outcome model. Default
 <code>NULL</code>.</p>
 </td></tr>
-<tr><td><code id="RegCalibDF_+3A_covOutcome">covOutcome</code></td>
+<tr><td><code id="RegCalibDF_+3A_covOutcomePlus">covOutcomePlus</code></td>
 <td>
 <p>Character vector of correctly-measured risk factors for
 the outcome that are <em>not</em> associated with the exposure or surrogate.
@@ -217,7 +217,7 @@ study; <code>FALSE</code> for an internal validation study. When
 <p>Named numeric vector of uncorrected point estimates
 from standard regression (intercept excluded). Names must match the
 (expanded) covariate names from <code>covCalib</code> followed by
-<code>covOutcome</code>. Required when <code>supplyEstimates = TRUE</code>.</p>
+<code>covOutcomePlus</code>. Required when <code>supplyEstimates = TRUE</code>.</p>
 </td></tr>
 <tr><td><code id="RegCalibDF_+3A_vcovEstimates">vcovEstimates</code></td>
 <td>

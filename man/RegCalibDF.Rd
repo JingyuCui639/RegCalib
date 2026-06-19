@@ -11,7 +11,7 @@ RegCalibDF(
   sur,
   exp,
   covCalib = NULL,
-  covOutcome = NULL,
+  covOutcomePlus = NULL,
   outcome = NA,
   event,
   time,
@@ -30,7 +30,7 @@ and \code{ms} is optional. Standard regression results are not returned
 in this case. Default \code{FALSE}.}
 
 \item{ms}{Main study data frame. Must contain all variables specified in
-\code{sur}, \code{covCalib}, and \code{covOutcome}. Required when
+\code{sur}, \code{covCalib}, and \code{covOutcomePlus}. Required when
 \code{supplyEstimates = FALSE}.}
 
 \item{vs}{Internal or external validation study data frame. Must contain
@@ -47,7 +47,7 @@ have the same length.}
 for in both the calibration model and the outcome model. Default
 \code{NULL}.}
 
-\item{covOutcome}{Character vector of correctly-measured risk factors for
+\item{covOutcomePlus}{Character vector of correctly-measured risk factors for
 the outcome that are \emph{not} associated with the exposure or surrogate.
 These are included in the outcome model only and must not overlap with
 \code{covCalib}. Default \code{NULL}.}
@@ -78,7 +78,7 @@ study; \code{FALSE} for an internal validation study. When
 \item{pointEstimates}{Named numeric vector of uncorrected point estimates
 from standard regression (intercept excluded). Names must match the
 (expanded) covariate names from \code{covCalib} followed by
-\code{covOutcome}. Required when \code{supplyEstimates = TRUE}.}
+\code{covOutcomePlus}. Required when \code{supplyEstimates = TRUE}.}
 
 \item{vcovEstimates}{Named square matrix of uncorrected variance-covariance
 estimates (intercept excluded). Column names must match those of
