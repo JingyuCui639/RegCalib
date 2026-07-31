@@ -64,7 +64,7 @@ study; \code{FALSE} for an internal validation study embedded in \code{ms}.}
 A named list containing:
 \describe{
 \item{correctedCoefTable}{Matrix of corrected estimates, standard errors,
-Z-values, p-values, and 95\\% confidence intervals.}
+Z-values, p-values, and 95\% confidence intervals.}
 \item{correctedVCOV}{Variance-covariance matrix of the corrected
 estimates.}
 }
@@ -74,25 +74,43 @@ Corrects for measurement error in continuous exposures (and covariates) and
 returns corrected coefficients, standard errors, p-values, and
 variance-covariance matrices using the Carroll-Ruppert-Stefanski-Crainiceanu
 (CRS) sandwich variance estimator. Supports linear and generalized linear
-outcome models under external and internal validation study designs. Standard
+outcome models under external validation study design. Standard
 errors are derived analytically via the sandwich estimator (not bootstrap).
 Non-linear terms such as interaction terms should be pre-computed as
 permanent columns in the input datasets rather than specified in the formula.
 }
 \examples{
-\dontrun{
+data("main_data_sim", package = "RegCalib")
+data("valid_data_sim", package = "RegCalib")
+
+set.seed(123)
+selected_rows <- sample(
+  seq_len(nrow(main_data_sim)),
+  1000
+)
+
+main_example <- main_data_sim[
+  selected_rows,
+  ,
+  drop = FALSE
+]
+
 result <- RegCalibSub(
-  ms       = main_data,
-  vs       = validation_data,
-  sur      = "Z",
-  exp      = "X",
-  covCalib = c("V1", "V2"),
-  outcome  = "Y",
-  method   = "lm",
+  ms = main_example,
+  vs = valid_data_sim,
+  sur = c("fqtfatinc", "fqcalinc", "fqalcinc"),
+  exp = c("drtfatinc", "drcalinc", "dralcinc"),
+  covCalib = "agec",
+  covOutcome = "agec",
+  outcome = "case",
+  method = "glm",
+  family = binomial,
+  link = "logit",
   external = TRUE
 )
+
 result$correctedCoefTable
-}
+result$correctedVCOV
 
 }
 \references{

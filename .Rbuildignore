@@ -1,0 +1,7 @@
+^data-raw$
+^doc$
+^Meta$
+^RegCalib\.Rproj$
+^\.Rproj\.user$
+^\.Rhistory$
+^cran-comments\.md$

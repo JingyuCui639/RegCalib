@@ -4,7 +4,7 @@
 #' returns corrected coefficients, standard errors, p-values, and
 #' variance-covariance matrices using the Carroll-Ruppert-Stefanski-Crainiceanu
 #' (CRS) sandwich variance estimator. Supports linear and generalized linear
-#' outcome models under external and internal validation study designs. Standard
+#' outcome models under external validation study design. Standard
 #' errors are derived analytically via the sandwich estimator (not bootstrap).
 #' Non-linear terms such as interaction terms should be pre-computed as
 #' permanent columns in the input datasets rather than specified in the formula.
@@ -41,7 +41,7 @@
 #' @return A named list containing:
 #' \describe{
 #'   \item{correctedCoefTable}{Matrix of corrected estimates, standard errors,
-#'     Z-values, p-values, and 95\% confidence intervals.}
+#'     Z-values, p-values, and 95% confidence intervals.}
 #'   \item{correctedVCOV}{Variance-covariance matrix of the corrected
 #'     estimates.}
 #' }
@@ -52,19 +52,37 @@
 #' Chapman & Hall/CRC.
 #'
 #' @examples
-#' \dontrun{
+#' data("main_data_sim", package = "RegCalib")
+#' data("valid_data_sim", package = "RegCalib")
+#'
+#' set.seed(123)
+#' selected_rows <- sample(
+#'   seq_len(nrow(main_data_sim)),
+#'   1000
+#' )
+#'
+#' main_example <- main_data_sim[
+#'   selected_rows,
+#'   ,
+#'   drop = FALSE
+#' ]
+#'
 #' result <- RegCalibSub(
-#'   ms       = main_data,
-#'   vs       = validation_data,
-#'   sur      = "Z",
-#'   exp      = "X",
-#'   covCalib = c("V1", "V2"),
-#'   outcome  = "Y",
-#'   method   = "lm",
+#'   ms = main_example,
+#'   vs = valid_data_sim,
+#'   sur = c("fqtfatinc", "fqcalinc", "fqalcinc"),
+#'   exp = c("drtfatinc", "drcalinc", "dralcinc"),
+#'   covCalib = "agec",
+#'   covOutcome = "agec",
+#'   outcome = "case",
+#'   method = "glm",
+#'   family = binomial,
+#'   link = "logit",
 #'   external = TRUE
 #' )
+#'
 #' result$correctedCoefTable
-#' }
+#' result$correctedVCOV
 #'
 #' @export
 RegCalibSub <- function(ms, vs,
@@ -93,25 +111,33 @@ RegCalibSub <- function(ms, vs,
     stop("Input data ms must be of data.frame class.")
   }
 
-  if (missing(sur) | missing(exp)) {
+  if (missing(sur) || missing(exp)) {
     stop("Missing exposure variable.")
-  } else if (class(sur) != "character" | class(exp) != "character") {
-    stop("mExp or exp is not supplied with character vector.")
+  } else if (!is.character(sur) || !is.character(exp)) {
+    stop("sur and exp must be character vectors.")
   } else if (length(sur) != length(exp)) {
     stop("Length of correctly measured variables differs from length of mismeasured variables.")
   }
 
   if (is.null(covCalib)) {
     warning("No covariates supplied.")
-  } else if (length(covCalib) != 0 & class(covCalib) != "character" |
-             (length(covOutcome) != 0 & class(covOutcome) != "character")) {
-    stop("covCalib or covOutcome is not supplied with character vector.")
+  } 
+  
+  if (length(covCalib) > 0L && !is.character(covCalib)) {
+    stop("covCalib must be NULL, character(0), or a character vector.")
+  }
+  
+  if (length(covOutcome) > 0L &&
+      !is.character(covOutcome)) {
+    stop("covOutcome must be NULL, character(0), or a character vector.")
   }
 
   if (is.na(outcome)) {
     stop("Outcome is missing.")
-  } else if (class(outcome) != "character" | outcome == "" | outcome == " ") {
-    stop("outcome is not supplied with appropriate character.")
+  } else if (!is.character(outcome) ||
+             length(outcome) != 1L ||
+             !nzchar(trimws(outcome))) {
+    stop("outcome must be a single nonempty character string.")
   }
 ########### Jingyu Cui June 10 2026 #####
   if (!method %in% c("lm", "glm")) {
@@ -175,7 +201,16 @@ RegCalibSub <- function(ms, vs,
   } else if (external == FALSE) {
     allVars_ms <- c(sur, exp, covAll, outcome, vsIndicator)
     allVars_ms_miss <- c(sur, covAll, outcome, vsIndicator)
-    ms_complete <- ms[complete.cases(ms[, allVars_ms_miss]), ]
+    
+    #ms_complete <- ms[complete.cases(ms[, allVars_ms_miss]), ]
+    # above line is relaced by the following
+    ms_complete <- ms[
+      stats::complete.cases(
+        ms[, allVars_ms_miss, drop = FALSE]
+      ),
+      ,
+      drop = FALSE
+    ]
     ms_complete <- ms_complete %>% dplyr::select(dplyr::all_of(allVars_ms))
     allVars_vs <- c(exp, sur, covCalib, outcome)
     vs_complete <- ms_complete %>% dplyr::select(dplyr::all_of(allVars_vs)) %>% stats::na.omit()
@@ -192,7 +227,10 @@ RegCalibSub <- function(ms, vs,
 
   X_VS <- stats::model.matrix(object = stats::as.formula(exposureFormulaX), data = vs_complete)
   X_MS <- stats::model.matrix(object = stats::as.formula(exposureFormulaX), data = ms_complete)
-  Y_VS <- stats::model.matrix(object = stats::as.formula(exposureFormulaY), data = vs_complete)[, -1]
+  Y_VS <- stats::model.matrix(
+    object = stats::as.formula(exposureFormulaY),
+    data = vs_complete
+  )[, -1, drop = FALSE]
   exposureModelVarNames <- colnames(X_VS)
 
   X <- as.matrix(X_VS)
@@ -348,37 +386,37 @@ RegCalibSub <- function(ms, vs,
     X_EVS <- X_EVS[, varOrderX] %>% as.matrix()
   }
 
-  # embedded helper: mean of outer products (used in comments/legacy)
-  meanOfRowVectorInMatrix1 <- function(Vhat, Z, X) {
-    matrixRowValue <- matrix(NA, nrow = nrow(Z), ncol = ncol(Z) * ncol(X))
-    for (i in 1:nrow(Z)) {
-      Vhat_i <- as.matrix(Vhat[i])
-      Z_i <- as.matrix(Z[i, ])
-      X_i <- as.matrix(X[i, ])
-      ZX_i <- (Z_i) %*% Vhat_i %*% t(X_i)
-      matrixRowValue[i, ] <- ZX_i
-    }
-    meanMatrixRowValue <- apply(X = matrixRowValue, MARGIN = 2, FUN = mean)
-    outputMatrix <- matrix(meanMatrixRowValue, nrow = ncol(Z), ncol = ncol(Z))
-    colnames(outputMatrix) <- c("(Intercept)", exp, covAll)
-    rownames(outputMatrix) <- c("(Intercept)", exp, covAll)
-    return(outputMatrix)
-  }
+  # # embedded helper: mean of outer products (used in comments/legacy)
+  # meanOfRowVectorInMatrix1 <- function(Vhat, Z, X) {
+  #   matrixRowValue <- matrix(NA, nrow = nrow(Z), ncol = ncol(Z) * ncol(X))
+  #   for (i in 1:nrow(Z)) {
+  #     Vhat_i <- as.matrix(Vhat[i])
+  #     Z_i <- as.matrix(Z[i, ])
+  #     X_i <- as.matrix(X[i, ])
+  #     ZX_i <- (Z_i) %*% Vhat_i %*% t(X_i)
+  #     matrixRowValue[i, ] <- ZX_i
+  #   }
+  #   meanMatrixRowValue <- apply(X = matrixRowValue, MARGIN = 2, FUN = mean)
+  #   outputMatrix <- matrix(meanMatrixRowValue, nrow = ncol(Z), ncol = ncol(Z))
+  #   colnames(outputMatrix) <- c("(Intercept)", exp, covAll)
+  #   rownames(outputMatrix) <- c("(Intercept)", exp, covAll)
+  #   return(outputMatrix)
+  # }
 
-  meanOfRowVectorInMatrix2 <- function(DhatZ, DhatX, Z, X) {
-    matrixRowValue <- matrix(NA, nrow = nrow(Z), ncol = ncol(Z) * ncol(X))
-    for (i in 1:nrow(Z)) {
-      DhatZ_i <- DhatZ[i]
-      DhatX_i <- DhatX[i]
-      Z_i <- as.matrix(Z[i, ])
-      X_i <- as.matrix(X[i, ])
-      ZX_i <- (Z_i) %*% DhatZ_i %*% t((X_i) %*% DhatX_i)
-      matrixRowValue[i, ] <- ZX_i
-    }
-    meanMatrixRowValue <- apply(X = matrixRowValue, MARGIN = 2, FUN = mean)
-    outputMatrix <- matrix(meanMatrixRowValue, nrow = ncol(Z), ncol = ncol(Z))
-    return(outputMatrix)
-  }
+  # meanOfRowVectorInMatrix2 <- function(DhatZ, DhatX, Z, X) {
+  #   matrixRowValue <- matrix(NA, nrow = nrow(Z), ncol = ncol(Z) * ncol(X))
+  #   for (i in 1:nrow(Z)) {
+  #     DhatZ_i <- DhatZ[i]
+  #     DhatX_i <- DhatX[i]
+  #     Z_i <- as.matrix(Z[i, ])
+  #     X_i <- as.matrix(X[i, ])
+  #     ZX_i <- (Z_i) %*% DhatZ_i %*% t((X_i) %*% DhatX_i)
+  #     matrixRowValue[i, ] <- ZX_i
+  #   }
+  #   meanMatrixRowValue <- apply(X = matrixRowValue, MARGIN = 2, FUN = mean)
+  #   outputMatrix <- matrix(meanMatrixRowValue, nrow = ncol(Z), ncol = ncol(Z))
+  #   return(outputMatrix)
+  # }
 
   mismeasureNumber <- length(exp)
 
@@ -538,7 +576,11 @@ RegCalibSub <- function(ms, vs,
     print(B_22)
   }
 
-  B_12 <- matrix(0, nrow = length(exp) * ncol(Z_EVS), ncol = ncol(Z_EVS))
+  B_12 <- matrix(
+    0,
+    nrow = length(exp) * ncol(Z_EVS),
+    ncol = ncol(X_MS)
+  )
   if (external == FALSE) {
     for (j in 1:(mismeasureNumber)) {
       exp_j <- exp[j]

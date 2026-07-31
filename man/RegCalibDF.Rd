@@ -13,8 +13,6 @@ RegCalibDF(
   covCalib = NULL,
   covOutcomePlus = NULL,
   outcome = NA,
-  event,
-  time,
   method = "lm",
   family = NA,
   link = NA,
@@ -55,14 +53,8 @@ These are included in the outcome model only and must not overlap with
 \item{outcome}{Character. Name of the outcome variable. Required when
 \code{method} is \code{"lm"} or \code{"glm"}.}
 
-\item{event}{Character. Name of the event status indicator for Cox models
-(0 = censored, 1 = event). Required when \code{method = "cox"}.}
-
-\item{time}{Character. Name of the follow-up time variable for Cox models.
-Required when \code{method = "cox"}.}
-
 \item{method}{Character. Outcome modelling method: \code{"lm"},
-\code{"glm"}, or \code{"cox"}. Default \code{"lm"}.}
+\code{"glm"}. Default \code{"lm"}.}
 
 \item{family}{Family function for \code{glm} (e.g., \code{binomial}). Not
 a character string. Required when \code{method = "glm"}.}
@@ -88,7 +80,7 @@ estimates (intercept excluded). Column names must match those of
 A named list containing:
 \describe{
 \item{correctedCoefTable}{Data frame of corrected estimates, standard
-errors, Z-values, p-values, and 95\\% confidence intervals.}
+errors, Z-values, p-values, and 95\% confidence intervals.}
 \item{correctedVCOV}{Variance-covariance matrix of the corrected
 estimates.}
 \item{standardCoefTable}{(When \code{supplyEstimates = FALSE}) Results
@@ -104,25 +96,41 @@ the calibration model.}
 Corrects for measurement error in continuous exposures (and covariates) and
 returns corrected coefficients, standard errors, p-values, and
 variance-covariance matrices. Users may supply their own uncorrected
-estimates (e.g., from Cox or logistic models) instead of using the built-in
-outcome model. Both external and internal validation study designs are
+estimates (e.g., from logistic regression model) instead of using the built-in
+outcome model. Only externalvalidation study design is
 supported. Based on Rosner, Spiegelman & Willett (1989, 1990) and
 Spiegelman, McDermott & Rosner (1997).
 }
 \examples{
-\dontrun{
-result <- RegCalibDF(
-  ms         = main_data,
-  vs         = validation_data,
-  sur        = "Z",
-  exp        = "X",
-  covCalib   = c("V1", "V2"),
-  outcome    = "Y",
-  method     = "lm",
-  external   = TRUE
+data("main_data_sim", package = "RegCalib")
+data("valid_data_sim", package = "RegCalib")
+
+set.seed(123)
+selected_rows <- sample(
+  seq_len(nrow(main_data_sim)),
+  1000
 )
+
+main_example <- main_data_sim[
+  selected_rows,
+  ,
+  drop = FALSE
+]
+
+result <- RegCalibDF(
+  ms = main_example,
+  vs = valid_data_sim,
+  sur = c("fqtfatinc", "fqcalinc", "fqalcinc"),
+  exp = c("drtfatinc", "drcalinc", "dralcinc"),
+  covCalib = "agec",
+  outcome = "case",
+  method = "glm",
+  family = binomial,
+  link = "logit",
+  external = TRUE
+)
+
 result$correctedCoefTable
-}
 
 }
 \references{
@@ -133,7 +141,7 @@ measurement error. \emph{Statistics in Medicine} 8:1051--1069.
 Rosner B, Spiegelman D, Willett WC (1990). Correction of logistic
 regression relative risk estimates and confidence intervals for measurement
 error: the case of multiple covariates measured with error.
-\emph{American Journal of Epidemiology} 132:734--735.
+\emph{American Journal of Epidemiology} 132:734--745.
 
 Spiegelman D, McDermott A, Rosner B (1997). The many uses of the
 'regression calibration' method for measurement error bias correction in

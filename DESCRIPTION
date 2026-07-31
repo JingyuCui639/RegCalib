@@ -2,31 +2,60 @@ Package: RegCalib
 Title: Regression Calibration for Measurement Error Correction
 Version: 0.1.0
 Authors@R: c(
-    person("Wenze", "Tang", role = c("aut")),
-    person("Molin", "Wang", role = c("aut")),
-    person("Jingyu", "Cui", role = c("aut", "cre"),
-           email = "jingyu.cui@yale.edu"))
-Description: Corrects for measurement error in continuous exposures (and
-    covariates) using regression calibration methods. Provides corrected
-    coefficients, standard errors, p-values, and variance-covariance
-    matrices for linear, generalized linear, and Cox proportional hazards
-    outcome models under both external and internal validation study designs.
-    Implements the deattenuation factor method
-    (RegCalibDF) and the substitution approach (RegCalibSub). Supports single and multiple
-    mismeasured exposures.
+	person(
+        given = "Jingyu",
+        family = "Cui",
+        email = "jingyu.cui@yale.edu",
+        role = c("aut", "cre"),
+        comment = c(
+            Affiliation = "Department of Biostatistics, Yale School of Public Health",
+            ORCID = "0000-0002-8073-1422"
+        )
+    ),
+    person(
+        given = "Wenze",
+        family = "Tang",
+        email = "wenzet@gmail.com",
+        role = "aut",
+        comment = c(
+            Affiliation = "Vertex Pharmaceuticals"
+        )
+    ),
+    person(
+        given = "Molin",
+        family = "Wang",
+        email = "stmow@channing.harvard.edu",
+        role = "aut",
+        comment = c(
+            Affiliation = "Department of Biostatistics, Department of Epidemiology, Harvard T.H. Chan School of Public Health"
+        )
+    )
+    )
+Description: Corrects for measurement error in continuous exposures and
+    covariates using regression calibration methods. Provides corrected
+    coefficients, standard errors, p-values, confidence intervals, and
+    variance-covariance matrices for linear and generalized linear outcome
+    models under an external validation study design. Implements the
+    deattenuation factor method (RegCalibDF) and the substitution approach
+    (RegCalibSub). Supports single and multiple error-prone exposures.
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
     stats,
     dplyr,
-    magrittr,
     Matrix,
-    matrixcalc,
-    earth,
-    survival
+    matrixcalc
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/JingyuCui639/RegCalib
 Config/roxygen2/version: 8.0.0
+Depends: 
+    R (>= 3.5)
+LazyData: true
+VignetteBuilder: knitr
+BugReports: https://github.com/JingyuCui639/RegCalib/issues
+LazyDataCompression: xz

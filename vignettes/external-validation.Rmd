@@ -1,0 +1,147 @@
+---
+title: "Regression Calibration with an External Validation Study"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regression Calibration with an External Validation Study}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This vignette demonstrates the use of the deattenuation factor and
+substitution methods implemented in the `RegCalib` package. The example uses
+a simulated main-study dataset and a simulated external-validation dataset.
+
+## Load the package and example data
+
+```{r load-data}
+library(RegCalib)
+
+data("main_data_sim", package = "RegCalib")
+data("valid_data_sim", package = "RegCalib")
+
+head(main_data_sim, 3)
+head(valid_data_sim, 3)
+```
+
+To keep the vignette fast enough to build during package checking, this
+example uses a representative subset of the main-study data. Replace
+`main_example` with `main_data_sim` to run the analysis using the complete
+dataset.
+
+```{r create-subset}
+set.seed(2026)
+
+rows_by_outcome <- split(
+  seq_len(nrow(main_data_sim)),
+  main_data_sim$case
+)
+
+example_rows <- unlist(
+  lapply(
+    rows_by_outcome,
+    function(rows) sample(rows, min(length(rows), 2500L))
+  ),
+  use.names = FALSE
+)
+
+main_example <- main_data_sim[example_rows, , drop = FALSE]
+
+table(main_example$case)
+```
+
+## Deattenuation factor method
+
+The deattenuation factor method corrects the outcome-model coefficients using
+information estimated from the external-validation study.
+
+```{r rc-df}
+rcdf <- RegCalibDF(
+  supplyEstimates = FALSE,
+  ms = main_example,
+  vs = valid_data_sim,
+  sur = c("fqtfatinc", "fqcalinc", "fqalcinc"),
+  exp = c("drtfatinc", "drcalinc", "dralcinc"),
+  covCalib = "agec",
+  covOutcomePlus = NULL,
+  outcome = "case",
+  method = "glm",
+  family = binomial,
+  link = "logit",
+  external = TRUE,
+  pointEstimates = NA,
+  vcovEstimates = NA
+)
+
+rcdf$correctedCoefTable
+```
+
+Because this example uses a logistic regression model, the corrected
+coefficients and confidence limits can be exponentiated and interpreted as
+odds ratios.
+
+```{r rc-df-or}
+corrected_RC_DF <- exp(
+  cbind(
+    OR = rcdf$correctedCoefTable[, 1],
+    "2.5 %" = rcdf$correctedCoefTable[, 5],
+    "97.5 %" = rcdf$correctedCoefTable[, 6]
+  )
+)
+
+corrected_RC_DF
+```
+
+## Substitution method
+
+The substitution method first predicts the error-prone exposures using the
+calibration models and then fits the outcome model using the calibrated
+values.
+
+```{r rc-sub}
+rcsub <- RegCalibSub(
+  ms = main_example,
+  vs = valid_data_sim,
+  sur = c("fqtfatinc", "fqcalinc", "fqalcinc"),
+  exp = c("drtfatinc", "drcalinc", "dralcinc"),
+  covCalib = "agec",
+  covOutcome = "agec",
+  outcome = "case",
+  method = "glm",
+  family = binomial,
+  link = "logit",
+  external = TRUE
+)
+
+rcsub$correctedCoefTable
+```
+
+The corrected coefficients and confidence limits are exponentiated to obtain
+odds ratios.
+
+```{r rc-sub-or}
+corrected_RC_SUB <- exp(
+  cbind(
+    OR = rcsub$correctedCoefTable[, 1],
+    "2.5 %" = rcsub$correctedCoefTable[, 5],
+    "97.5 %" = rcsub$correctedCoefTable[, 6]
+  )
+)
+
+corrected_RC_SUB
+```
+
+## Access the corrected variance-covariance matrices
+
+```{r covariance}
+rcdf$correctedVCOV
+rcsub$correctedVCOV
+```
